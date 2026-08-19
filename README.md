@@ -23,23 +23,19 @@ Portal6/
 └── exports/                   # extended streaming history Spotify (quand reçu)
 ```
 
-## Setup (Windows 11 + WSL2 Ubuntu)
+## Setup d'une nouvelle machine
 
-Le venv Python vit dans le home Linux (un venv sur `/mnt/c` casse `ensurepip`) :
+Bootstrap automatisé dans `setup/` (idempotent, relançable) :
 
-```bash
-python3 -m venv ~/.venvs/spotify-toolkit
-source ~/.venvs/spotify-toolkit/bin/activate
-pip install -r requirements.txt mutagen openpyxl
-```
+- **Windows** : `powershell -ExecutionPolicy Bypass -File setup\bootstrap.ps1`
+  → installe WSL2 + Ubuntu si absents, la fonction PowerShell `p6`, puis enchaîne sur le `.sh` dans Ubuntu.
+- **macOS / Ubuntu** : `./setup/bootstrap.sh`
+  → brew (mac), zsh + oh-my-zsh, venv Python `~/.venvs/portal6` + dépendances, node, alias `portal6`.
 
-Raccourci recommandé dans `~/.zshrc` :
+Raccourcis obtenus : `p6` (PowerShell → Ubuntu, dans le projet, venv activé) et `portal6` (dans zsh/bash).
 
-```bash
-alias spot='cd /mnt/c/DevLab/spotify-toolkit && source ~/.venvs/spotify-toolkit/bin/activate'
-```
-
-Le task runner est npm (`brew install node`) — les scripts restent en Python.
+Le venv vit dans le home Linux, jamais dans le repo (un venv sur `/mnt/c` casse `ensurepip` sous WSL).
+Le task runner est npm — les scripts restent en Python.
 
 ## La DB — référentiel unifié
 

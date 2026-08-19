@@ -1,9 +1,9 @@
 {
   "name": "portal6",
   "private": true,
-  "description": "Portal6 — task runner du monorepo. Les scripts ETL restent en Python (venv WSL: ~/.venvs/spotify-toolkit)",
+  "description": "Portal6 — task runner du monorepo. Les scripts ETL restent en Python (venv WSL: ~/.venvs/portal6)",
   "scripts": {
-    "build:db": "$HOME/.venvs/spotify-toolkit/bin/python plugin/etl/music/build_db.py",
-    "db:stats": "$HOME/.venvs/spotify-toolkit/bin/python plugin/etl/music/build_db.py --stats"
+    "build:db": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py",
+    "db:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py --stats"
   }
 }
