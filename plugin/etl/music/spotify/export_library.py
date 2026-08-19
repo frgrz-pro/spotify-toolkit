@@ -26,7 +26,7 @@ from spotipy.exceptions import SpotifyException
 sys.path.insert(0, str(Path(__file__).parent))
 from auth import get_client
 
-DATA_DIR = Path(__file__).resolve().parents[4] / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data" / "music"
 CACHE_FILE = DATA_DIR / ".export_cache.json"
 CSV_FILE = DATA_DIR / "library.csv"
 HEADER = ["playlist", "artist", "track", "album"]

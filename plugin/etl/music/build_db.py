@@ -27,7 +27,7 @@ import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = ROOT / "data"                     # vault : donnée brute uniquement
+DATA_DIR = ROOT / "data" / "music"                     # vault : donnée brute uniquement
 DB_DIR = ROOT / "plugin" / "db"              # artefacts construits
 XLSX_FILE = DATA_DIR / "extract_spotify.xlsx"
 SCAN_FILE = DATA_DIR / "library_scan.csv"

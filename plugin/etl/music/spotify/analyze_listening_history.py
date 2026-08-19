@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 EXPORTS_DIR = Path(__file__).resolve().parents[4] / "exports"
-DATA_DIR = Path(__file__).resolve().parents[4] / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data" / "music"
 
 MIN_MS_PLAYED = 30_000  # ignore plays under 30s (skips)
 

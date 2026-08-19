@@ -19,7 +19,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-DATA_DIR = Path(__file__).resolve().parents[4] / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data" / "music"
 LIB_FILE = DATA_DIR / "library_dedup.csv"
 LASTFM_CACHE = DATA_DIR / ".enrich_lastfm.json"
 RECCO_CACHE = DATA_DIR / ".enrich_recco.json"

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Lisbonne 2024</name>
+    <Folder>
+      <name>Restos</name>
+      <Placemark>
+        <name>Cervejaria Ramiro</name>
+        <description>Fruits de mer, y aller tôt</description>
+        <ExtendedData>
+          <Data name="prix"><value>€€</value></Data>
+        </ExtendedData>
+        <Point><coordinates>-9.1354,38.7205,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Time Out Market</name>
+        <Point><coordinates>-9.1461,38.7071,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>À voir</name>
+      <Placemark>
+        <name>Miradouro da Senhora do Monte</name>
+        <description>Coucher de soleil</description>
+        <Point><coordinates>-9.1321,38.7190,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Time Out Market</name>
+        <Point><coordinates>-9.1461,38.7071,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Balade Alfama</name>
+        <LineString><coordinates>-9.1330,38.7110,0 -9.1290,38.7140,0</coordinates></LineString>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

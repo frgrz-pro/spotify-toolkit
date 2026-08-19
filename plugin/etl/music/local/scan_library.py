@@ -119,6 +119,8 @@ def main():
         print(f"Scan de {root} ...")
         count = 0
         for path in root.rglob("*"):
+            if "_a_trier" in path.parts:
+                continue  # quarantaine dedup : jamais réindexée
             if path.is_file() and path.suffix.lower() in AUDIO_EXTENSIONS:
                 try:
                     rows.append(scan_file(path))

@@ -4,6 +4,9 @@
   "description": "Portal6 — task runner du monorepo. Les scripts ETL restent en Python (venv WSL: ~/.venvs/portal6)",
   "scripts": {
     "build:db": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py",
-    "db:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py --stats"
+    "db:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py --stats",
+    "places:inventory": "$HOME/.venvs/portal6/bin/python plugin/etl/places/inventory.py",
+    "places:build": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py",
+    "places:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py --stats"
   }
 }
