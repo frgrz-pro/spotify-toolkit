@@ -36,6 +36,23 @@ def normalize(s: str) -> str:
     return s.strip()
 
 
+WSL_MNT_RE = re.compile(r"^/mnt/([a-z])/(.*)$")
+
+
+def to_windows_path(path: str) -> str:
+    """Convertit un chemin WSL (/mnt/m/...) en chemin Windows (M:\\...) pour le .ps1.
+    Laisse inchangé un chemin déjà Windows (scan fait nativement)."""
+    m = WSL_MNT_RE.match(path)
+    if m:
+        return f"{m.group(1).upper()}:\\" + m.group(2).replace("/", "\\")
+    return path
+
+
+def ps1_quote(s: str) -> str:
+    """Quote PowerShell single-quote (l'apostrophe se double)."""
+    return "'" + s.replace("'", "''") + "'"
+
+
 def quality_key(row):
     def to_num(v, default=0):
         try:
@@ -66,11 +83,16 @@ def main():
     print(f"{len(rows)} fichiers chargés depuis {csv_path}")
 
     groups = defaultdict(list)
+    n_skipped = 0
     for row in rows:
         key = (normalize(row.get("artist", "")), normalize(row.get("title", "")))
-        if key == ("", ""):
-            continue  # rien d'exploitable pour dédoublonner
+        # Clé faible = faux positifs garantis (fichiers sans tags groupés sur "01", "track2"…).
+        # On exige artiste ET titre non vides, et un titre qui n'est pas qu'un numéro.
+        if not key[0] or not key[1] or key[1].isdigit():
+            n_skipped += 1
+            continue
         groups[key].append(row)
+    print(f"{n_skipped} fichiers ignorés (tags trop faibles pour dédoublonner sans risque)")
 
     dupe_groups = {k: v for k, v in groups.items() if len(v) > 1}
     print(f"{len(dupe_groups)} groupes en doublon ({sum(len(v) for v in dupe_groups.values())} fichiers concernés)")
@@ -100,9 +122,9 @@ def main():
                 "extension": row.get("extension", ""),
             })
             if action == "candidate_removal":
-                p = row.get("path", "")
+                p = ps1_quote(to_windows_path(row.get("path", "")))
                 ps1_lines.append(
-                    f'$src = "{p}"; '
+                    f'$src = {p}; '
                     f'$dst = Join-Path (Split-Path $src) "_a_trier"; '
                     f'New-Item -ItemType Directory -Force -Path $dst | Out-Null; '
                     f'Move-Item -LiteralPath $src -Destination $dst -Force'
