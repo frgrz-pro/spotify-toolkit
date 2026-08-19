@@ -9,7 +9,7 @@ Ne supprime jamais rien automatiquement. Génère :
   "_a_trier" à côté de chaque fichier. À copier sur la tour Windows, relire,
   puis lancer toi-même. Rien n'est jamais supprimé automatiquement par nous.
 
-Usage: python scripts/local/dedup_library.py [--csv data/library_scan.csv]
+Usage: python plugin/etl/music/local/dedup_library.py [--csv data/library_scan.csv]
 """
 import argparse
 import csv
@@ -18,7 +18,7 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data"
 
 FEAT_RE = re.compile(r"\b(feat\.?|featuring|ft\.?)\b.*", re.IGNORECASE)
 PAREN_RE = re.compile(r"[\(\[][^)\]]*[\)\]]")

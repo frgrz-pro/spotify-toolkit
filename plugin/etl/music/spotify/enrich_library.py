@@ -1,8 +1,8 @@
 """Enrich the deduped library with Last.fm genre tags and ReccoBeats audio features.
 
 Usage:
-  python scripts/spotify/enrich_library.py --lastfm [--limit N]   # tags par artiste (genres/moods)
-  python scripts/spotify/enrich_library.py --recco  [--limit N]   # audio features par titre
+  python plugin/etl/music/spotify/enrich_library.py --lastfm [--limit N]   # tags par artiste (genres/moods)
+  python plugin/etl/music/spotify/enrich_library.py --recco  [--limit N]   # audio features par titre
 
 Resumable like export_library.py: progress is cached after every few items in
 data/.enrich_lastfm.json / data/.enrich_recco.json (separate files so both phases
@@ -19,7 +19,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data"
 LIB_FILE = DATA_DIR / "library_dedup.csv"
 LASTFM_CACHE = DATA_DIR / ".enrich_lastfm.json"
 RECCO_CACHE = DATA_DIR / ".enrich_recco.json"
@@ -76,7 +76,7 @@ def polite_get(session, url, *, params=None, max_retries=3):
 # ---------- Last.fm : tags par artiste ----------
 
 def run_lastfm(limit):
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
     key = os.environ["LASTFM_API_KEY"]
     rows = load_library()
     # tous les artistes splittés (les collabs comptent pour chaque nom)
@@ -179,7 +179,7 @@ def run_recco(limit):
             print(f"  ⚠ transitoire ({streak}/5) {r['artist']} — {r['track']}: {exc}")
             if streak >= 5:
                 print("⛔ Erreurs serveur en série : ReccoBeats est down ou nous bloque. "
-                      "Arrêt propre — relance plus tard via scripts/spotify/harvest.sh.")
+                      "Arrêt propre — relance plus tard via plugin/etl/music/spotify/harvest.sh.")
                 break
             time.sleep(15)
             continue
@@ -299,7 +299,7 @@ FREQ_KEEP = ["found", "track_name", "artist_name", "isrc", "mbid", "release_date
 
 
 def run_freq(limit):
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
     key = os.environ["FREQBLOG_API_KEY"]
     rows = load_library()
     cache = load_cache(FREQ_CACHE)

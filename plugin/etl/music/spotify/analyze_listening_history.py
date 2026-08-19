@@ -4,7 +4,7 @@ album/artist shortlist for physical (vinyl/CD) repurchase.
 Usage:
   1. Unzip the export Spotify emails you into exports/
      (files named like Streaming_History_Audio_2023_1.json)
-  2. python scripts/spotify/analyze_listening_history.py
+  2. python plugin/etl/music/spotify/analyze_listening_history.py
 Output: data/albums_ranked.csv, data/artists_ranked.csv
 """
 import json
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pandas as pd
 
-EXPORTS_DIR = Path(__file__).parent.parent.parent / "exports"
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+EXPORTS_DIR = Path(__file__).resolve().parents[4] / "exports"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data"
 
 MIN_MS_PLAYED = 30_000  # ignore plays under 30s (skips)
 

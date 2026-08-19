@@ -12,7 +12,7 @@ import sys
 import time
 from pathlib import Path
 
-DATA = Path(__file__).parent.parent.parent / "data"
+DATA = Path(__file__).resolve().parents[4] / "data"
 N_ARTISTS = 9636
 N_TRACKS = 14017
 POLL_S = 20

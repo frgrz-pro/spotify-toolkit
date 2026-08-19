@@ -1,6 +1,6 @@
 """Propose une découpe des playlists monolithiques en sous-playlists « gravables ».
 
-Usage: python scripts/spotify/split_monoliths.py
+Usage: python plugin/etl/music/spotify/split_monoliths.py
 
 - Monolithe = playlist >= MONOLITH_MIN titres, hors archives datées (année dans le nom)
   et hors viviers (Shazam, Backup, My Playlist #, Discover…).
@@ -67,7 +67,7 @@ def split_playlist(name, rows, lastfm, recco):
 
 
 def main():
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
     cache = ex.load_cache()
     lastfm = load_cache(LASTFM_CACHE)
     recco = load_cache(RECCO_CACHE)
@@ -101,7 +101,7 @@ def main():
     import os
     import gspread
     sh = gspread.service_account(
-        filename=str(Path(__file__).parent.parent.parent / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
+        filename=str(Path(__file__).resolve().parents[4] / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
     ).open_by_key(os.environ["GSHEET_ID"])
     for title, rows_out in [("Monolithes", plan), ("Monolithes détail", detail)]:
         try:

@@ -1,6 +1,6 @@
 """Export the whole library (playlists + Liked Songs) to CSV and a Google Sheet.
 
-Usage: python scripts/spotify/export_library.py
+Usage: python plugin/etl/music/spotify/export_library.py
 
 Built around the Dev Mode daily quota (429 + Retry-After ~24h):
 - every fetched page is persisted in data/.export_cache.json before the next request,
@@ -26,7 +26,7 @@ from spotipy.exceptions import SpotifyException
 sys.path.insert(0, str(Path(__file__).parent))
 from auth import get_client
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data"
 CACHE_FILE = DATA_DIR / ".export_cache.json"
 CSV_FILE = DATA_DIR / "library.csv"
 HEADER = ["playlist", "artist", "track", "album"]
@@ -198,7 +198,7 @@ def get_spreadsheet():
         return None
     sa_path = Path(sa_file)
     if not sa_path.is_absolute():
-        sa_path = Path(__file__).parent.parent.parent / sa_path
+        sa_path = Path(__file__).resolve().parents[4] / sa_path
     if not sa_path.exists():
         print(f"⚠ Clé service account introuvable ({sa_path}) : export local uniquement ce run.")
         return None

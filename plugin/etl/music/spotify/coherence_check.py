@@ -1,6 +1,6 @@
 """Détecte les incohérences entre le profil d'une playlist et son contenu.
 
-Usage: python scripts/spotify/coherence_check.py
+Usage: python plugin/etl/music/spotify/coherence_check.py
 
 Deux détections, par playlist :
 - écart de GENRE : le profil = tags Last.fm dominants des artistes de la playlist
@@ -48,7 +48,7 @@ def track_tags(lastfm, artists_field):
 
 
 def main():
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
     cache = ex.load_cache()
     lastfm = load_cache(LASTFM_CACHE)
     recco = load_cache(RECCO_CACHE)
@@ -158,7 +158,7 @@ def main():
     import os
     import gspread
     sh = gspread.service_account(
-        filename=str(Path(__file__).parent.parent.parent / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
+        filename=str(Path(__file__).resolve().parents[4] / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
     ).open_by_key(os.environ["GSHEET_ID"])
     rows_out = ([["playlist", "artist", "track", "écart", "détail", "recommended playlist"]] + outliers)
     try:

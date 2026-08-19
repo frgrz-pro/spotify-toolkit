@@ -1,8 +1,8 @@
 """Build/refresh the « Analyse » tab from the enrichment caches.
 
 Usage:
-  python scripts/spotify/build_analysis.py            # one shot
-  python scripts/spotify/build_analysis.py --watch    # refresh every 5 min until harvests complete
+  python plugin/etl/music/spotify/build_analysis.py            # one shot
+  python plugin/etl/music/spotify/build_analysis.py --watch    # refresh every 5 min until harvests complete
 
 Idempotent full rewrite of the tab (one Sheets write call per pass), so it can run
 while enrich_library.py harvests are still filling the caches.
@@ -86,7 +86,7 @@ def push(rows):
     import gspread
     import os
     sh = gspread.service_account(
-        filename=str(Path(__file__).parent.parent.parent / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
+        filename=str(Path(__file__).resolve().parents[4] / os.environ["GOOGLE_SERVICE_ACCOUNT_FILE"])
     ).open_by_key(os.environ["GSHEET_ID"])
     try:
         ws = sh.worksheet("Analyse")
@@ -102,7 +102,7 @@ def main():
     ap.add_argument("--watch", action="store_true")
     ap.add_argument("--interval", type=int, default=300)
     args = ap.parse_args()
-    load_dotenv(Path(__file__).parent.parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
 
     while True:
         rows, n_genre, n_feat, n_artists, n_tracks = build_rows()

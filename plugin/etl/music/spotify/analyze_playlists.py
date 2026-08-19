@@ -1,6 +1,6 @@
 """Fetch all playlists + saved tracks and report duplicates / unclassified tracks.
 
-Usage: python scripts/spotify/analyze_playlists.py
+Usage: python plugin/etl/music/spotify/analyze_playlists.py
 Output: data/playlists_tracks.csv, prints a summary report.
 
 Dev Mode apps have a strict daily request quota (as of the Feb 2026 changes).
@@ -19,7 +19,7 @@ from spotipy.exceptions import SpotifyException
 sys.path.insert(0, str(Path(__file__).parent))
 from auth import get_client
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[4] / "data"
 CACHE_FILE = DATA_DIR / ".playlist_tracks_cache.json"
 
 

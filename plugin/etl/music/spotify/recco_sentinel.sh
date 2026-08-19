@@ -6,4 +6,4 @@ until [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 'https://api.rec
   sleep 600
 done
 echo "$(date '+%H:%M:%S') API de retour — lancement de la moisson"
-exec .venv/bin/python -u scripts/spotify/enrich_library.py --recco
+exec .venv/bin/python -u plugin/etl/music/spotify/enrich_library.py --recco

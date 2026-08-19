@@ -14,7 +14,7 @@ Usage (Windows, cmd ou PowerShell) :
     python scan_library.py "D:\\Musique" "E:\\AutreDossier" --out library_scan.csv
 
 Le CSV produit est à ramener (clé USB) et à déposer dans data/ du projet
-spotify-toolkit, puis à traiter avec scripts/local/dedup_library.py.
+spotify-toolkit, puis à traiter avec plugin/etl/music/local/dedup_library.py.
 """
 import argparse
 import csv

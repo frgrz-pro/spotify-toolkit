@@ -1,138 +1,107 @@
-# Spotify Toolkit
+# Portal6
 
-Deux objectifs :
-1. Analyser/réorganiser les playlists actuelles (doublons, titres orphelins) et gérer toute ta bibliothèque, en ligne (Spotify) comme hors-ligne (fichiers locaux).
-2. À partir de l'historique d'écoute complet, établir une liste d'albums à racheter en physique (vinyle/CD) avant de quitter Spotify.
+Monorepo perso autour de la musique : référentiel unifié de la bibliothèque (Spotify + fichiers locaux),
+outils d'analyse/rationalisation des playlists, et à terme web radio privée + sync multi-plateformes
+(iTunes / Spotify / YouTube).
 
-Le projet est séparé en deux flows indépendants :
-- **`scripts/spotify/`** — tout ce qui parle à l'API Spotify (nécessite internet + une app développeur).
-- **`scripts/local/`** — scan et nettoyage de ta bibliothèque locale sur la tour Windows (aucune dépendance internet, aucune dépendance au flow Spotify).
+## Structure
 
----
+```
+Portal6/
+├── apps/                      # projets applicatifs (api, web, mobile) — à venir
+├── plugin/
+│   ├── db/                    # music.db (SQLite, artefact construit — gitignoré)
+│   └── etl/
+│       └── music/             # ETL musique
+│           ├── build_db.py    # hydrate la DB depuis le vault data/
+│           ├── spotify/       # extraction & enrichissement Spotify (API, Last.fm, ReccoBeats…)
+│           └── local/         # scan & dedup de la bibliothèque de fichiers locale
+├── data/                      # VAULT : donnée brute qui hydrate la DB (gitignoré)
+│   ├── extract_spotify.xlsx   # export complet du Google Sheet « extract spotify »
+│   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
+├── docs/                      # notes d'analyse et décisions
+└── exports/                   # extended streaming history Spotify (quand reçu)
+```
 
-## Partie A — Spotify (online)
+## Setup (Windows 11 + WSL2 Ubuntu)
 
-### 0. Setup
+Le venv Python vit dans le home Linux (un venv sur `/mnt/c` casse `ensurepip`) :
 
 ```bash
-cd /Users/r2d2/DevLab/spotify-toolkit
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
+python3 -m venv ~/.venvs/spotify-toolkit
+source ~/.venvs/spotify-toolkit/bin/activate
+pip install -r requirements.txt mutagen openpyxl
 ```
 
-### 1. Demander l'export de données (à faire en premier, ça prend jusqu'à 30 jours)
-
-1. Va sur https://www.spotify.com/account/privacy/
-2. Section "Télécharger tes données" → coche **"Extended streaming history"** (l'historique complet, pas juste le résumé annuel)
-3. Confirme la demande. Tu recevras un email avec un lien de téléchargement (généralement sous 5-30 jours).
-4. Quand tu reçois le ZIP : dézippe son contenu dans le dossier `exports/` de ce projet (les fichiers s'appellent `Streaming_History_Audio_YYYY_N.json`).
-
-### 2. Créer une app Spotify Developer (pour l'automatisation des playlists)
-
-**Prérequis : ton compte Spotify doit être en Premium** (obligatoire depuis les changements de février 2026 pour que l'API fonctionne, même en usage strictement personnel).
-
-1. Va sur https://developer.spotify.com/dashboard et connecte-toi avec ton compte Spotify.
-2. "Create app" → nom libre (ex: `perso-spotify-toolkit`), description libre.
-3. Redirect URI : `http://127.0.0.1:8888/callback`
-4. API utilisée : Web API.
-5. Une fois créée, va dans "Settings" de l'app pour récupérer le **Client ID** et le **Client Secret**.
-6. Colle-les dans le fichier `.env` :
-   ```
-   SPOTIFY_CLIENT_ID=...
-   SPOTIFY_CLIENT_SECRET=...
-   SPOTIFY_REDIRECT_URI=http://127.0.0.1:8888/callback
-   ```
-
-La première exécution d'un script ouvrira ton navigateur pour te connecter directement sur spotify.com (tu authentifies toi-même, aucune donnée ne transite par moi).
-
-### 3. Exporter toute la bibliothèque en CSV + Google Sheet
+Raccourci recommandé dans `~/.zshrc` :
 
 ```bash
-python scripts/spotify/export_library.py
+alias spot='cd /mnt/c/DevLab/spotify-toolkit && source ~/.venvs/spotify-toolkit/bin/activate'
 ```
 
-CSV minimal `data/library.csv` (`playlist, artist, track, album`, Liked Songs inclus en pseudo-playlist)
-et push live vers un Google Sheet par paquets. Résilient au quota journalier : chaque page est
-cachée dans `data/.export_cache.json`, un 429 est une sortie normale — relancer toutes les ~24h
-jusqu'à complétion. Voir [docs/2026-07-26-export-csv-incremental.md](docs/2026-07-26-export-csv-incremental.md).
+Le task runner est npm (`brew install node`) — les scripts restent en Python.
 
-Prérequis Sheets (sinon le script tourne en local et le Sheet rattrape au run suivant) :
-service account Google Cloud avec l'API Sheets activée, sa clé JSON dans `service-account.json`
-(racine du projet, gitignoré), le Sheet partagé en éditeur avec l'email du service account,
-et `GOOGLE_SERVICE_ACCOUNT_FILE` + `GSHEET_ID` dans `.env`.
-
-### 4. Analyser les playlists actuelles
+## La DB — référentiel unifié
 
 ```bash
-python scripts/spotify/analyze_playlists.py
+npm run build:db    # (re)construit plugin/db/music.db depuis le vault data/
+npm run db:stats    # synthèse sans reconstruire (Spotify vs local, matchés, orphelins)
 ```
 
-Détecte : titres présents dans plusieurs playlists, titres likés ("Liked Songs") absents de toute playlist. Exporte le détail dans `data/playlists_tracks.csv`.
+Reconstruction complète à chaque run : les sources du vault restent la vérité, la DB est
+un artefact dérivé. Tables : `tracks` (canonique, dédup par artiste+titre normalisés),
+`playlists`, `playlist_tracks`, `files` (fichiers physiques), `enrichment` (genres, pays,
+mood, audio features), `platform_refs` (IDs spotify/youtube/itunes — pour la future sync).
 
-### 5. Construire la liste d'albums à racheter (une fois l'export reçu)
+**IDs projet** : `P6-TRK-000001` (tracks), `P6-PLS-0001` (playlists), `P6-FIL-000001` (fichiers).
+⚠️ Réattribués à chaque rebuild tant que la DB est un artefact dérivé ; à geler le jour où
+elle devient référentiel maître.
+
+## Flow local — scanner la bibliothèque de fichiers
 
 ```bash
-python scripts/spotify/analyze_listening_history.py
+python plugin/etl/music/local/scan_library.py "/mnt/m" --out data/library_scan.csv
 ```
 
-Agrège par artiste/album (heures d'écoute, nombre de lectures, période), classe par temps d'écoute décroissant. Sort `data/albums_ranked.csv` et `data/artists_ranked.csv` — base de départ pour la liste d'achats vinyle/CD.
+Lecture seule (tags via mutagen, fallback nom de fichier). Puis `npm run build:db` pour
+intégrer et matcher contre les tracks Spotify.
 
----
+Dédoublonnage : `python plugin/etl/music/local/dedup_library.py --csv data/library_scan.csv`
+génère un rapport + un `.ps1` de quarantaine qui **déplace** (jamais ne supprime) les
+doublons de moindre qualité vers `_a_trier` — à relire avant exécution.
 
-## Partie B — Bibliothèque locale (offline, tour Windows)
+## Flow Spotify (historique — fait sur le Mac, conservé pour référence)
 
-Contexte : la tour tourne iTunes/Winamp, n'a pas d'accès internet, et sert de dépôt principal
-pour la musique perso. Objectif : scanner cette bibliothèque en local (aucune dépendance),
-ramener le CSV ici pour analyse et repérer les doublons à nettoyer.
+L'extraction complète a déjà tourné : 14 017 titres, 110 playlists, enrichis à 95 % en genres
+(Last.fm), 84 % en pays (MusicBrainz), ~18 % en audio features (ReccoBeats, moisson interrompue).
+Le tout vit dans le Google Sheet « extract spotify », dont `data/extract_spotify.xlsx` est l'export.
 
-### 1. Scanner la bibliothèque sur la tour Windows
+Scripts dans `plugin/etl/music/spotify/` :
+- `export_library.py` — export incrémental des playlists (résilient au quota API 24h, cache reprennable)
+- `enrich_library.py` — moissons Last.fm / ReccoBeats / MusicBrainz (`--lastfm`, `--recco`, `--country`, `--freq`)
+- `analyze_playlists.py`, `coherence_check.py`, `split_monoliths.py`, `build_analysis.py` — analyses et onglets du Sheet
+- `harvest.sh`, `progress.py` — orchestration des moissons (écrits pour macOS, à adapter si relancés ici)
 
-`scripts/local/scan_library.py` est un fichier **autonome** — copie-le seul sur la tour (clé USB),
-pas besoin du reste du projet.
+Setup API (si on relance une moisson) : app sur https://developer.spotify.com/dashboard,
+credentials dans `.env` (cf. `.env.example`), compte Premium requis depuis février 2026.
 
-Optionnel mais recommandé : installer `mutagen` (lecture des tags ID3/FLAC/MP4) pour de bien
-meilleurs résultats que le fallback "nom de fichier". `mutagen` est pur Python, sans dépendance —
-un seul fichier `.whl` à transférer par USB suffit, pas besoin d'internet sur la tour :
+## Historique d'écoute (en attente)
+
+Demander l'« Extended streaming history » sur https://www.spotify.com/account/privacy/
+(délai 5-30 jours), dézipper dans `exports/`, puis :
 
 ```bash
-# Ici, avec internet : télécharge le wheel à transférer sur la tour
-pip download mutagen --no-deps -d ./mutagen_offline
-```
-```powershell
-# Sur la tour Windows, hors-ligne, une fois le .whl copié :
-python -m pip install --no-index --find-links=. mutagen
+python plugin/etl/music/spotify/analyze_listening_history.py
 ```
 
-Puis, sur la tour :
+→ classement albums/artistes par temps d'écoute — base de la liste d'achats vinyle/CD.
 
-```powershell
-python scan_library.py "D:\Musique" --out library_scan.csv
-```
+## Roadmap
 
-(plusieurs dossiers racine possibles : `python scan_library.py "D:\Musique" "E:\Autre" --out library_scan.csv`)
-
-Ramène ensuite `library_scan.csv` par clé USB et dépose-le dans `data/` de ce projet.
-
-### 2. Analyser et dédoublonner
-
-```bash
-python scripts/local/dedup_library.py --csv data/library_scan.csv
-```
-
-Regroupe par (artiste, titre) normalisés, classe chaque groupe par qualité (bitrate puis taille).
-Sort deux fichiers :
-- `data/local_duplicates_report.csv` — détail de tous les doublons, piste à garder marquée.
-- `data/quarantine_duplicates.ps1` — script PowerShell **généré**, qui **déplace** (ne supprime
-  jamais) les doublons de moindre qualité vers un sous-dossier `_a_trier` à côté de chaque fichier.
-
-À ramener sur la tour par USB, à relire, puis à lancer toi-même depuis PowerShell. Une fois les
-`_a_trier` vérifiés, tu vides ces dossiers manuellement.
-
----
-
-## Prochaines étapes possibles
-
-- Croiser `albums_ranked.csv` avec Discogs (disponibilité vinyle/CD, prix) pour prioriser les achats.
-- Croiser la bibliothèque locale (Partie B) avec la liste Spotify (Partie A) pour voir ce qui existe déjà en local avant d'acheter.
-- Scripts de réorganisation automatique (tri par genre/décennie, fusion de playlists en double).
+1. ✅ Extraction Spotify + enrichissement (Mac, juillet 2026)
+2. ✅ DB SQLite unifiée (`plugin/db/music.db`)
+3. ⏳ Scan bibliothèque locale `M:` + matching local ↔ Spotify
+4. Dédoublonnage des fichiers locaux
+5. Reprise moisson ReccoBeats (features audio) vers la DB
+6. Web radio privée (Docker sur la tour) alimentée par la DB
+7. Sync playlists iTunes / Spotify / YouTube (`platform_refs`)
