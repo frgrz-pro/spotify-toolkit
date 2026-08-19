@@ -48,11 +48,6 @@ def to_windows_path(path: str) -> str:
     return path
 
 
-def ps1_quote(s: str) -> str:
-    """Quote PowerShell single-quote (l'apostrophe se double)."""
-    return "'" + s.replace("'", "''") + "'"
-
-
 def quality_key(row):
     def to_num(v, default=0):
         try:
@@ -98,13 +93,7 @@ def main():
     print(f"{len(dupe_groups)} groupes en doublon ({sum(len(v) for v in dupe_groups.values())} fichiers concernés)")
 
     report_rows = []
-    ps1_lines = [
-        "# Script généré par dedup_library.py — à relire avant exécution.",
-        "# Déplace les doublons de moindre qualité vers un sous-dossier _a_trier",
-        "# à côté de chaque fichier (rien n'est supprimé).",
-        "$ErrorActionPreference = 'Stop'",
-        "",
-    ]
+    quarantine_paths = []
 
     for group_id, (key, items) in enumerate(sorted(dupe_groups.items()), 1):
         ranked = sorted(items, key=quality_key, reverse=True)
@@ -122,13 +111,7 @@ def main():
                 "extension": row.get("extension", ""),
             })
             if action == "candidate_removal":
-                p = ps1_quote(to_windows_path(row.get("path", "")))
-                ps1_lines.append(
-                    f'$src = {p}; '
-                    f'$dst = Join-Path (Split-Path $src) "_a_trier"; '
-                    f'New-Item -ItemType Directory -Force -Path $dst | Out-Null; '
-                    f'Move-Item -LiteralPath $src -Destination $dst -Force'
-                )
+                quarantine_paths.append(to_windows_path(row.get("path", "")))
 
     DATA_DIR.mkdir(exist_ok=True)
     report_path = DATA_DIR / "local_duplicates_report.csv"
@@ -141,9 +124,36 @@ def main():
         writer.writerows(report_rows)
     print(f"Rapport: {report_path}")
 
+    # Les chemins sont de la DONNÉE (quarantine_paths.txt), jamais du code inline dans
+    # le .ps1 : les apostrophes typographiques et autres caractères spéciaux des noms
+    # de fichiers cassent le parsing PowerShell, aucun échappement n'est fiable à 100 %.
+    # utf-8-sig (BOM) obligatoire : sans BOM, Windows PowerShell 5.1 lit en ANSI.
+    paths_file = DATA_DIR / "quarantine_paths.txt"
+    paths_file.write_text("\n".join(quarantine_paths), encoding="utf-8-sig")
+
     ps1_path = DATA_DIR / "quarantine_duplicates.ps1"
-    ps1_path.write_text("\n".join(ps1_lines), encoding="utf-8")
-    n_candidates = sum(1 for r in report_rows if r["action"] == "candidate_removal")
+    ps1_path.write_text(
+        "\n".join([
+            "# Script généré par dedup_library.py — à relire avant exécution.",
+            "# Lit quarantine_paths.txt (même dossier) et DÉPLACE chaque fichier vers un",
+            "# sous-dossier _a_trier à côté de lui. Rien n'est jamais supprimé.",
+            "$ErrorActionPreference = 'Stop'",
+            "$list = Join-Path $PSScriptRoot 'quarantine_paths.txt'",
+            "$moved = 0",
+            "$missing = 0",
+            "foreach ($src in (Get-Content -LiteralPath $list -Encoding UTF8)) {",
+            "    if (-not $src.Trim()) { continue }",
+            "    if (-not (Test-Path -LiteralPath $src)) { Write-Warning \"introuvable: $src\"; $missing++; continue }",
+            "    $dst = Join-Path (Split-Path -Path $src -Parent) '_a_trier'",
+            "    New-Item -ItemType Directory -Force -Path $dst | Out-Null",
+            "    Move-Item -LiteralPath $src -Destination $dst -Force",
+            "    $moved++",
+            "}",
+            "Write-Host \"$moved fichiers déplacés en quarantaine (_a_trier), $missing introuvables.\"",
+        ]),
+        encoding="utf-8-sig",
+    )
+    n_candidates = len(quarantine_paths)
     print(f"Script de quarantaine ({n_candidates} fichiers à déplacer): {ps1_path}")
     print("\n-> Copie ce .ps1 sur la tour Windows, relis-le, puis lance-le toi-même depuis PowerShell.")
     print("   Rien n'est supprimé : les fichiers vont dans un dossier _a_trier que tu vides ensuite à la main.")
