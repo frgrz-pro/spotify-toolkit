@@ -1,12 +1,43 @@
+# --- Secrets -----------------------------------------------------------------
 .env
-.cache
-.cache-*
-data/
+service-account.json
+*.pem
+*.key
+
+# --- Vault (donnée brute, jamais versionnée) ---------------------------------
+data/*
+!data/.gitkeep
 exports/*
 !exports/.gitkeep
+
+# --- Artefacts construits ----------------------------------------------------
+plugin/db/*.db
+plugin/db/*.db-journal
+plugin/db/*.db-wal
+plugin/db/*.db-shm
+
+# --- Python ------------------------------------------------------------------
 __pycache__/
 *.pyc
 .venv/
-service-account.json
-plugin/db/*.db
+.pytest_cache/
+.cache
+.cache-*
+
+# --- Node --------------------------------------------------------------------
 node_modules/
+npm-debug.log*
+
+# --- Logs & temporaires ------------------------------------------------------
+*.log
+*.tmp
+nohup.out
+
+# --- OS ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---------------------------------------------------------------------
+.vscode/
+.idea/

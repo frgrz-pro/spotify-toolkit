@@ -5,6 +5,7 @@
   "scripts": {
     "build:db": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py",
     "db:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/music/build_db.py --stats",
+    "fingerprint": "$HOME/.venvs/portal6/bin/python plugin/etl/music/local/fingerprint_library.py",
     "places:inventory": "$HOME/.venvs/portal6/bin/python plugin/etl/places/inventory.py",
     "places:build": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py",
     "places:stats": "$HOME/.venvs/portal6/bin/python plugin/etl/places/build_db.py --stats"
