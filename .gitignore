@@ -1,0 +1,10 @@
+.env
+.cache
+.cache-*
+data/
+exports/*
+!exports/.gitkeep
+__pycache__/
+*.pyc
+.venv/
+service-account.json
