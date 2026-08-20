@@ -144,7 +144,11 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--csv", default=str(SCAN_FILE))
     ap.add_argument("--limit", type=int, default=0, help="s'arrêter après N nouveaux fichiers")
+    ap.add_argument("--exclude", default="_a_trier,/radio/,/downloads/",
+                    help="sous-chaînes de chemins à exclure, séparées par des virgules "
+                         "(défaut : quarantaine, mixtapes radio, téléchargements)")
     args = ap.parse_args()
+    excludes = [e for e in args.exclude.split(",") if e]
 
     load_dotenv(ROOT / ".env")
     api_key = os.environ.get("ACOUSTID_API_KEY", "")
@@ -157,7 +161,8 @@ def main():
 
     with Path(args.csv).open(encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
-    targets = [r for r in rows if normalize_key(r.get("artist"), r.get("title"))]
+    targets = [r for r in rows if normalize_key(r.get("artist"), r.get("title"))
+               and not any(e in r["path"] for e in excludes)]
     rows_by_path = {r["path"]: r for r in targets}
     print(f"{len(targets)} fichiers à tags faibles sur {len(rows)} scannés")
 

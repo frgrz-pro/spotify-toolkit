@@ -21,15 +21,20 @@ vacances, renseigner en masse des repérages, et se préparer des itinéraires.
 à la liste de mes points à proximité. À terme : détecter aussi les événements, associations et
 activités autour de moi (données externes).
 
+**UC5 — Y aller vraiment.** (Ajouté après les protos desktop.) On enregistre beaucoup plus de
+points qu'on n'en visite : il faut voir ceux où on n'est **jamais allé**. Statut visité /
+à découvrir par lieu, filtre dédié sur la carte, et c'est ce signal qui guidera les
+recommandations (quoi me proposer = mes points jamais visités, pondérés par contexte).
+
 **Priorisation retenue :**
 
 | Lot | Contenu |
 |---|---|
 | Lot A | Le référentiel existe (Takeout → ETL → `places.db`), aucune UI |
-| Lot B | UC1 en lecture + UC4 (points à proximité) : carte, couches togglables, recherche, fiche lieu |
-| Lot C | UC2 : capture rapide + inbox de triage — première écriture |
+| Lot B | UC1 en lecture + UC4 (points à proximité) : carte, couches togglables, recherche, fiche lieu, filtre visité/à découvrir (UC5, lecture) |
+| Lot C | UC2 : capture rapide + inbox de triage + « j'y suis allé » (UC5) — premières écritures |
 | Lot D | UC3 : voyages, saisie en masse, itinéraires, offline mobile |
-| Lot E | UC4 étendu : événements/assos/activités (sources externes : OSM, OpenAgenda, datatourisme…) |
+| Lot E | UC4 étendu (événements/assos : OSM, OpenAgenda, datatourisme…) + recommandations guidées par les non-visités (UC5) |
 
 Chaque lot est une tranche verticale finie et utilisée avant d'ouvrir le suivant.
 
@@ -45,6 +50,14 @@ Le modèle esquissé à l'exploration tient, avec ces précisions :
   (lat/lon + timestamp + note libre optionnelle). Le « Shazam » proprement dit = au moment du
   triage, l'app propose automatiquement le POI OSM le plus proche (reverse geocoding + Overpass)
   pour pré-remplir nom/catégorie/adresse — l'utilisateur confirme ou corrige.
+- **Les visites (UC5) sont des événements, pas une colonne.** Une visite = un `place_events`
+  de type `VISIT` (date, note libre, éventuellement une appréciation) — donnée née dans l'app,
+  rejouable au rebuild comme les captures. Le statut « visité / à découvrir » et le compteur de
+  visites sont **dérivés** dans l'artefact (vue `v_place_status`). Tous les lieux importés
+  naissent « jamais visité » — c'est exactement le point : rendre visible la masse des
+  non-visités. Le filtre carte (Tous / À découvrir / Visités) arrive dès le Lot B (tout sera
+  « à découvrir » au début, c'est normal) ; l'action « j'y suis allé » arrive au Lot C avec les
+  autres écritures ; les recommandations pilotées par ce signal sont du Lot E.
 - **`trips`** (Lot D) : un voyage = un groupe de listes + des itinéraires ordonnés
   (`trip_stops` avec position). Pas dans le schéma du Lot A, mais le modèle n'y ferme pas la porte.
 - **Requêtes de proximité** : index R*Tree SQLite (module natif) sur `places` — disponible
