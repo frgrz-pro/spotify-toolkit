@@ -22,6 +22,6 @@ def get_client(retries: int = 3, status_retries: int = 3) -> spotipy.Spotify:
         client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
         redirect_uri=os.environ.get("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888/callback"),
         scope=SCOPES,
-        cache_path=".cache-spotify-toolkit",
+        cache_path=".cache-portal6",
     )
     return spotipy.Spotify(auth_manager=auth_manager, retries=retries, status_retries=status_retries)

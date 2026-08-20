@@ -25,7 +25,7 @@ LASTFM_CACHE = DATA_DIR / ".enrich_lastfm.json"
 RECCO_CACHE = DATA_DIR / ".enrich_recco.json"
 COUNTRY_CACHE = DATA_DIR / ".enrich_country.json"
 MB_URL = "https://musicbrainz.org/ws/2/artist/"
-MB_UA = "spotify-toolkit/1.0 (fc.grzybowski.dev@gmail.com)"
+MB_UA = "portal6/1.0 (fc.grzybowski.dev@gmail.com)"
 
 LASTFM_URL = "https://ws.audioscrobbler.com/2.0/"
 RECCO_URL = "https://api.reccobeats.com/v1"
@@ -167,7 +167,7 @@ def run_recco(limit):
         todo = todo[:limit]
 
     session = requests.Session()
-    session.headers["User-Agent"] = "spotify-toolkit/1.0 (export bibliothèque perso)"
+    session.headers["User-Agent"] = "portal6/1.0 (export bibliothèque perso)"
     found = done = streak = 0
     for i, r in enumerate(todo, 1):
         k = f"{norm(r['artist'])}||{norm(r['track'])}"
@@ -311,7 +311,7 @@ def run_freq(limit):
         todo = todo[:limit]
 
     session = requests.Session()
-    session.headers.update({"X-Api-Key": key, "User-Agent": "spotify-toolkit/1.0"})
+    session.headers.update({"X-Api-Key": key, "User-Agent": "portal6/1.0"})
     found_run = done_run = 0
     for start in range(0, len(todo), FREQ_BATCH):
         batch = todo[start:start + FREQ_BATCH]

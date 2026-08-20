@@ -4,6 +4,10 @@ Monorepo perso autour de la musique : référentiel unifié de la bibliothèque 
 outils d'analyse/rationalisation des playlists, et à terme web radio privée + sync multi-plateformes
 (iTunes / Spotify / YouTube).
 
+Le domaine musique (**Portal6-music**) a deux faces : la partie **software** (ETL, DB, analyses —
+tout ce qui est décrit ci-dessous) et la partie **hardware** (`hardware/` : transformation d'un
+poste Brandt RK 711S en web-radio cliente d'un serveur AzuraCast — cf. [hardware/README.md](hardware/README.md)).
+
 ## Structure
 
 ```
@@ -20,7 +24,8 @@ Portal6/
 │   ├── extract_spotify.xlsx   # export complet du Google Sheet « extract spotify »
 │   └── library_scan.csv       # scan des fichiers locaux (produit par scan_library.py)
 ├── docs/                      # notes d'analyse et décisions
-└── exports/                   # extended streaming history Spotify (quand reçu)
+├── exports/                   # extended streaming history Spotify (quand reçu)
+└── hardware/                  # projet Radio : Brandt RK 711S → web-radio (notes de design + BOM)
 ```
 
 ## Setup d'une nouvelle machine
@@ -99,5 +104,6 @@ python plugin/etl/music/spotify/analyze_listening_history.py
 3. ⏳ Scan bibliothèque locale `M:` + matching local ↔ Spotify
 4. Dédoublonnage des fichiers locaux
 5. Reprise moisson ReccoBeats (features audio) vers la DB
-6. Web radio privée (Docker sur la tour) alimentée par la DB
+6. Web radio privée (Docker sur la tour) alimentée par la DB — design dans `hardware/design-serveur-azuracast.md`
+   et `hardware/design-programmation-editoriale.md` ; le poste physique dans `hardware/design-brandt-rk711s.md`
 7. Sync playlists iTunes / Spotify / YouTube (`platform_refs`)

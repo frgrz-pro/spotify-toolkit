@@ -1,6 +1,6 @@
 """Scan une bibliothèque musicale locale (Windows, hors-ligne) et exporte un CSV.
 
-Fichier 100% autonome : aucune dépendance au reste du projet spotify-toolkit,
+Fichier 100% autonome : aucune dépendance au reste du projet portal6,
 copiable seul sur une machine sans accès internet et sans autre setup.
 
 Dépendance optionnelle : mutagen (lecture des tags ID3/FLAC/MP4/OGG).
@@ -14,7 +14,7 @@ Usage (Windows, cmd ou PowerShell) :
     python scan_library.py "D:\\Musique" "E:\\AutreDossier" --out library_scan.csv
 
 Le CSV produit est à ramener (clé USB) et à déposer dans data/ du projet
-spotify-toolkit, puis à traiter avec plugin/etl/music/local/dedup_library.py.
+portal6, puis à traiter avec plugin/etl/music/local/dedup_library.py.
 """
 import argparse
 import csv

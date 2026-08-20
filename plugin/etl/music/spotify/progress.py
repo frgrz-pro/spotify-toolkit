@@ -61,7 +61,7 @@ def snapshot():
 
 
 def render(snap, gains=None):
-    print(f"─── moissons spotify-toolkit ── {time.strftime('%H:%M:%S')} ───")
+    print(f"─── moissons portal6 ── {time.strftime('%H:%M:%S')} ───")
     for name, (pct, line) in snap.items():
         color = COLORS[name]
         if gains and name in gains:
